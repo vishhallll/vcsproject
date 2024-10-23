@@ -65,9 +65,31 @@ def create_snapshot(repo_name,description=""):
 
     print(f"Created Snapshot at '{timestamp}' with description : '{description}'")
 
+#viewing the history
+def view_history(repo_name):
+    snapshots_file_path=os.path.join(repo_name, ".meta", "snapshots.json")
+
+#open the snapshots file and display them with an id
+    try:
+        with open(snapshots_file_path, "r") as f:
+            snapshots=json.load(f)
+            if not snapshots:
+                print("No snapshots found")
+            else:
+                print("History of Snapshots")
+                for ind,snapshot in enumerate(snapshots):
+                    print(f"{ind + 1}. [{snapshot['timestamp']}] {snapshot['description']}")
+    except FileNotFoundError:
+        print("No history available. Please create a snapshot first.")
+    except json.JSONDecodeError:
+        print("Error reading snapshots.")
+
+
 if __name__ == "__main__":
     repo_name = input("Enter the name of the repository: ")
     initialize_repo(repo_name)
 
     description=input("Enter a description for the Snapshot :")
     create_snapshot(repo_name, description)
+
+    view_history(repo_name)

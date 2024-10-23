@@ -1,0 +1,20 @@
+# Ignore Python bytecode
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environments
+env/
+venv/
+
+# Ignore log files
+*.log
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+
+# Ignore metadata directory in any user-created repo
+*/.meta/
+
+# Ignore snapshots.json files in .meta directories
+*.meta/snapshots.json

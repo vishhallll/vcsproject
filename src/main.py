@@ -88,6 +88,47 @@ def view_history(repo_name):
     except json.JSONDecodeError:
         print("Error reading snapshots.")
 
+#rollback function to rollback to a previous snapshot
+def rollback(repo_name,snapshot_index):
+    #path to the jsonfile
+    snapshots_file_path=os.path.join(repo_name, ".meta", "snapshots.json")
+
+    #read the list of current snapshots from snapshots.json file
+    try:
+        with open(snapshots_file_path, "r") as f:
+            snapshots=json.load(f)
+        
+        #check if a snapshot index is invalid
+        if snapshot_index < 1 or snapshot_index > len(snapshots):
+            print("Invalid snapshot index.")
+            return
+
+        #retrieving the given snapshot
+        target_snapshot=snapshots[snapshot_index - 1]
+        print(f"rolling back to snapshot from {target_snapshot['timestamp']} : '{target_snapshot['description']}'")
+
+        #clear the current files in the repository except .meta
+        for file_name in os.listdir(repo_name):
+            if file_name != ".meta":
+                file_path=os.path.join(repo_name, file_name)
+                os.remove(file_path)
+            
+        #restore files and contents from snapshots
+        for file_name, content in target_snapshot['files'].items():
+            file_path=os.path.join(repo_name, file_name)
+            with open(file_path, "w") as f:
+                f.write(content)
+            
+        print("rollback successful.")
+    #if any errors are found print them
+    except FileNotFoundError:
+        print("No snapshots found. Please create a snapshot first.")
+    except json.JSONDecodeError:
+        print("Error reading snapshots file.")
+    except OSError as e:
+        print(f"Error during rollback: {e}")
+
+
 
 if __name__ == "__main__":
     repo_name = input("Enter the name of the repository: ")
@@ -97,3 +138,7 @@ if __name__ == "__main__":
     create_snapshot(repo_name, description)
 
     view_history(repo_name)
+    
+    snapshot_index=int(input("Enter a snapshot index :"))
+    rollback(repo_name, snapshot_index)
+    

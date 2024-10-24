@@ -129,6 +129,40 @@ def rollback(repo_name,snapshot_index):
         print(f"Error during rollback: {e}")
 
 
+#restore function to restore contents of one particular file at a particular snapshot
+def restore(repo_name, snapshot_index, file_name):
+    snapshots_file_path=os.path.join(repo_name, ".meta", "snapshots.json")
+
+#read the list of current snapshots
+    try:
+        with open(snapshots_file_path, "r") as f:
+            snapshots=json.load(f)
+    
+        if(snapshot_index < 1 or snapshot_index > len(snapshots)):
+            print("Invalid snapshot index.")
+        
+        target_snaphot=snapshots[snapshot_index - 1]
+        
+        #check if the specified file exists in the snapshot
+        if file_name not in target_snaphot['files']:
+            print(f"File '{file_name} not found in the specified snapshot")
+            return
+
+        #store the contents in the specified file
+        content = target_snaphot['files'][file_name]
+        file_path =os.path.join(repo_name, file_name)
+        with open(file_path, "w") as f:
+            f.write(content)
+        
+        print(f"Restored '{file_name}' to the state from'{target_snaphot['timestamp']}'.")
+
+    except FileNotFoundError:
+        print("No snapshots found. Please create a snapshot first.")
+    except json.JSONDecodeError:
+        print("Error reading snapshots file.")
+    except OSError as e:
+        print(f"Error during restore: {e}")
+
 
 if __name__ == "__main__":
     repo_name = input("Enter the name of the repository: ")

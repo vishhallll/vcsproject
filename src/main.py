@@ -2,6 +2,7 @@
 import os
 import json
 import time
+import argparse
 
 # Initialize a repo
 def initialize_repo(repo_name):
@@ -169,18 +170,60 @@ def restore(repo_name, snapshot_index, file_name):
         print(f"Error during restore: {e}")
 
 
+
+import argparse
+import os
+import json
+import time
+
+# Define all your functions (initialize_repo, create_snapshot, view_history, rollback, restore)
+
+# Entry point function
+def main():
+    parser = argparse.ArgumentParser(prog='simv', description='A simple version control tool')
+    subparsers = parser.add_subparsers(dest='command', help='Sub-command help')
+
+    # `init` command
+    init_parser = subparsers.add_parser('init', help='Initialize a new repository')
+    init_parser.add_argument('repo_name', help='Name of the repository')
+
+    # `snapshot` command
+    snapshot_parser = subparsers.add_parser('snapshot', help='Create a new snapshot')
+    snapshot_parser.add_argument('repo_name', help='Name of the repository')
+    snapshot_parser.add_argument('description', nargs='?', default='', help='Description for the snapshot')
+
+    # `history` command
+    history_parser = subparsers.add_parser('history', help='View snapshot history')
+    history_parser.add_argument('repo_name', help='Name of the repository')
+
+    # `rollback` command
+    rollback_parser = subparsers.add_parser('rollback', help='Rollback to a specific snapshot')
+    rollback_parser.add_argument('repo_name', help='Name of the repository')
+    rollback_parser.add_argument('snapshot_index', type=int, help='Index of the snapshot to rollback to')
+
+    # `restore` command
+    restore_parser = subparsers.add_parser('restore', help='Restore a specific file from a snapshot')
+    restore_parser.add_argument('repo_name', help='Name of the repository')
+    restore_parser.add_argument('snapshot_index', type=int, help='Index of the snapshot to restore from')
+    restore_parser.add_argument('file_name', help='Name of the file to restore')
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Map commands to functions
+    if args.command == 'init':
+        initialize_repo(args.repo_name)
+    elif args.command == 'snapshot':
+        create_snapshot(args.repo_name, args.description)
+    elif args.command == 'history':
+        view_history(args.repo_name)
+    elif args.command == 'rollback':
+        rollback(args.repo_name, args.snapshot_index)
+    elif args.command == 'restore':
+        restore(args.repo_name, args.snapshot_index, args.file_name)
+    else:
+        parser.print_help()
+
 if __name__ == "__main__":
-    repo_name = input("Enter the name of the repository: ").strip()
-    if not repo_name:
-        print("REpository name cannot be empty.")
-        exit(1)
-    initialize_repo(repo_name)
+    main()
 
-    description=input("Enter a description for the Snapshot :")
-    create_snapshot(repo_name, description)
-
-    view_history(repo_name)
-    
-    snapshot_index=int(input("Enter a snapshot index :"))
-    rollback(repo_name, snapshot_index)
-    

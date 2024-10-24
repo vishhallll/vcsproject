@@ -15,7 +15,7 @@ A simple version control system designed specifically for solo developers, with 
    `git clone <repository-url>`
 2. Navigate to the project directory.
    `cd vcs`
-3. Set up a virtual environment:
+3. Set up a virtual environment(optional):
    `python -m venv venv`
 4. Activate the virtual environment:
    - For macOS/Linux: `source venv/bin/activate`

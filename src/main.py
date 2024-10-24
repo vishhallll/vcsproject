@@ -38,9 +38,13 @@ def create_snapshot(repo_name,description=""):
     #create a timestamp
     timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
     
-    #read the files at the current snapshot
-    files=[f for f in os.listdir(repo_name) if f!=".meta"]
-
+   # Read the files at the current snapshot and their content
+    files = {}
+    for file_name in os.listdir(repo_name):
+        if file_name != ".meta":
+            file_path = os.path.join(repo_name, file_name)
+            with open(file_path, "r") as f:
+                files[file_name] = f.read()
     #new snapshot list in python format
     snapshot={
             "timestamp"   : timestamp,

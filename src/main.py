@@ -33,18 +33,21 @@ def initialize_repo(repo_name):
 def create_snapshot(repo_name,description=""):
     #create path strings  to open the files
     meta_path=os.path.join(repo_name, ".meta")
-    snapshots_file_path=os.path.join(meta_path, "snapshots.json")
+    snapshots_file_path = os.path.join(meta_path, "snapshots.json")
 
     #create a timestamp
     timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
     
-   # Read the files at the current snapshot and their content
+    # Read the files at the current snapshot and their content
     files = {}
     for file_name in os.listdir(repo_name):
         if file_name != ".meta":
             file_path = os.path.join(repo_name, file_name)
-            with open(file_path, "r") as f:
-                files[file_name] = f.read()
+            try:
+                with open(file_path, "r") as f:
+                    files[file_name] = f.read()
+            except IOError as e:
+                print(f"Error reading file '{file_name}': {e}")
     #new snapshot list in python format
     snapshot={
             "timestamp"   : timestamp,
@@ -67,13 +70,13 @@ def create_snapshot(repo_name,description=""):
     with open(snapshots_file_path, "w") as f:
         json.dump(snapshots, f, indent=4)
 
-    print(f"Created Snapshot at '{timestamp}' with description : '{description}'")
+    print(f"Created Snapshot at '{timestamp}' with description: '{description}'")
 
 #viewing the history
 def view_history(repo_name):
     snapshots_file_path=os.path.join(repo_name, ".meta", "snapshots.json")
 
-#open the snapshots file and display them with an id
+    #open the snapshots file and display them with an id
     try:
         with open(snapshots_file_path, "r") as f:
             snapshots=json.load(f)
@@ -91,7 +94,7 @@ def view_history(repo_name):
 #rollback function to rollback to a previous snapshot
 def rollback(repo_name,snapshot_index):
     #path to the jsonfile
-    snapshots_file_path=os.path.join(repo_name, ".meta", "snapshots.json")
+    snapshots_file_path = os.path.join(repo_name, ".meta", "snapshots.json")
 
     #read the list of current snapshots from snapshots.json file
     try:
@@ -105,7 +108,7 @@ def rollback(repo_name,snapshot_index):
 
         #retrieving the given snapshot
         target_snapshot=snapshots[snapshot_index - 1]
-        print(f"rolling back to snapshot from {target_snapshot['timestamp']} : '{target_snapshot['description']}'")
+        print(f"rolling back to snapshot '{snapshot_index}' ({target_snapshot['timestamp']}) : '{target_snapshot['description']}'")
 
         #clear the current files in the repository except .meta
         for file_name in os.listdir(repo_name):
@@ -120,6 +123,7 @@ def rollback(repo_name,snapshot_index):
                 f.write(content)
             
         print("rollback successful.")
+
     #if any errors are found print them
     except FileNotFoundError:
         print("No snapshots found. Please create a snapshot first.")
@@ -133,28 +137,29 @@ def rollback(repo_name,snapshot_index):
 def restore(repo_name, snapshot_index, file_name):
     snapshots_file_path=os.path.join(repo_name, ".meta", "snapshots.json")
 
-#read the list of current snapshots
+    #read the list of current snapshots
     try:
         with open(snapshots_file_path, "r") as f:
             snapshots=json.load(f)
     
         if(snapshot_index < 1 or snapshot_index > len(snapshots)):
             print("Invalid snapshot index.")
+            return
         
-        target_snaphot=snapshots[snapshot_index - 1]
+        target_snapshot = snapshots[snapshot_index - 1]
         
         #check if the specified file exists in the snapshot
-        if file_name not in target_snaphot['files']:
-            print(f"File '{file_name} not found in the specified snapshot")
+        if file_name not in target_snapshot['files']:
+            print(f"File '{file_name}'not found in the specified snapshot")
             return
 
         #store the contents in the specified file
-        content = target_snaphot['files'][file_name]
-        file_path =os.path.join(repo_name, file_name)
+        content = target_snapshot['files'][file_name]
+        file_path = os.path.join(repo_name, file_name)
         with open(file_path, "w") as f:
             f.write(content)
         
-        print(f"Restored '{file_name}' to the state from'{target_snaphot['timestamp']}'.")
+        print(f"Restored '{file_name}' to the state from'{target_snapshot['timestamp']}'.")
 
     except FileNotFoundError:
         print("No snapshots found. Please create a snapshot first.")
@@ -165,7 +170,10 @@ def restore(repo_name, snapshot_index, file_name):
 
 
 if __name__ == "__main__":
-    repo_name = input("Enter the name of the repository: ")
+    repo_name = input("Enter the name of the repository: ").strip()
+    if not repo_name:
+        print("REpository name cannot be empty.")
+        exit(1)
     initialize_repo(repo_name)
 
     description=input("Enter a description for the Snapshot :")
